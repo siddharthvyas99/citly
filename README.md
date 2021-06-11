@@ -3,6 +3,8 @@
 # CITLY
  Application Description - A URL shortener app with feature of pinning desired shortened URL and click counter feature. App frontend build on React.js with backend on Ruby on Rails. 
 
+ Link to web app - https://citly-app.herokuapp.com/
+
 Functional Requirements
 
 1. User should be able to shorten a URL into a randomly generated link.
