@@ -2,18 +2,20 @@ import React, { useState, useEffect } from "react";
 import { isNil, isEmpty, either } from "ramda";
 
 import Container from "components/Container";
-import ListTasks from "components/Tasks/ListTasks";
+import ListLinks from "components/Links/ListLinks";
+import CreateLink from "components/Links/CreateLink";
 import PageLoader from "components/PageLoader";
-import tasksApi from "apis/tasks";
+import linksApi from "apis/links";
 
 const Dashboard = ({ history }) => {
-  const [tasks, setTasks] = useState([]);
+  const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [inputurl, setInputUrl] = useState("");
 
-  const fetchTasks = async () => {
+  const fetchLinks = async () => {
     try {
-      const response = await tasksApi.list();
-      setTasks(response.data.tasks);
+      const response = await linksApi.list();
+      setLinks(response.data.links);
       setLoading(false);
     } catch (error) {
       logger.error(error);
@@ -21,8 +23,29 @@ const Dashboard = ({ history }) => {
     }
   };
 
+  const createLink = async () => {
+    try {
+      await linksApi.create({ link: { original_url: link } });
+      Toastr.success("URL shortened successfully!!");
+      setLink("");
+      fetchLinks();
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
+  const handlePin = async (slug, pinned) => {
+    try {
+      await linksApi.update(slug);
+      Toastr.success(`Link ${pinned ? "unpinned !!" : "pinned to top"}`);
+      fetchLinks();
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
   useEffect(() => {
-    fetchTasks();
+    fetchLinks();
   }, []);
 
   if (loading) {
@@ -33,19 +56,23 @@ const Dashboard = ({ history }) => {
     );
   }
 
-  if (!either(isNil, isEmpty)(tasks)) {
-    return (
-      <Container>
-        <ListTasks data={tasks} />
-      </Container>
-    );
-  }
-
   return (
     <Container>
-      <h1 className="text-xl leading-5 text-center">
-        You have no tasks assigned 😔
-      </h1>
+      <CreateLink
+        inputurl={inputurl}
+        loading={loading}
+        setInputUrl={setInputUrl}
+        createLink={createLink}
+      />
+      {!either(isNil, isEmpty)(links) ? (
+        <Container>
+          <ListLinks data={links} handlePin={handlePin} />
+        </Container>
+      ) : (
+        <h1 className="text-xl leading-5 text-center">
+          No links have shortened yet!!
+        </h1>
+      )}
     </Container>
   );
 };
