@@ -5,6 +5,8 @@ import Container from "components/Container";
 import ListLinks from "components/Links/ListLinks";
 import CreateLink from "components/Links/CreateLink";
 import PageLoader from "components/PageLoader";
+import Toastr from "components/Common/Toastr";
+
 import linksApi from "apis/links";
 
 const Dashboard = ({ history }) => {
@@ -25,7 +27,7 @@ const Dashboard = ({ history }) => {
 
   const createLink = async () => {
     try {
-      await linksApi.create({ link: { original_url: link } });
+      const resp = await linksApi.create({ link: { original_url: inputurl } });
       Toastr.success("URL shortened successfully!!");
       setLink("");
       fetchLinks();
@@ -38,6 +40,16 @@ const Dashboard = ({ history }) => {
     try {
       await linksApi.update(slug);
       Toastr.success(`Link ${pinned ? "unpinned !!" : "pinned to top"}`);
+      fetchLinks();
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
+  const handleClick = async slug => {
+    try {
+      const response = await linksApi.show(slug);
+      window.open(response.data.link.original_url);
       fetchLinks();
     } catch (error) {
       logger.error(error);
@@ -65,12 +77,14 @@ const Dashboard = ({ history }) => {
         createLink={createLink}
       />
       {!either(isNil, isEmpty)(links) ? (
-        <Container>
-          <ListLinks data={links} handlePin={handlePin} />
-        </Container>
+        <ListLinks
+          data={links}
+          handlePin={handlePin}
+          handleClick={handleClick}
+        />
       ) : (
         <h1 className="text-xl leading-5 text-center">
-          No links have shortened yet!!
+          No links have been shortened yet!!
         </h1>
       )}
     </Container>

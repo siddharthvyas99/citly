@@ -23,7 +23,12 @@ class LinksController < ApplicationController
 
   def show
     @link.update_attribute(:clicked, @link.clicked + 1)
-    redirect_to @link.original_url
+    if @link.save
+      render status: :ok, json: { link: @link }
+    else
+      errors = @link.errors.full_messages
+      render status: :unprocessable_entity, json: { errors: errors }
+    end
   end
 
   def update
